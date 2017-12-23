@@ -4,7 +4,9 @@ import edu.princeton.cs.algs4.StdStats;
 
 
 public class PercolationStats {
-    private double[] thresholds;
+    private static final double CONFIDENCE_95 = 1.96;
+
+    private final double[] thresholds;
     private final int trials;
     
     public PercolationStats(int n, int trials) {
@@ -18,7 +20,7 @@ public class PercolationStats {
         for (int i = 0; i < trials; i++) {
             Percolation p = new Percolation(n);
             while (!p.percolates()) {
-                p.open(StdRandom.uniform(n), StdRandom.uniform(n)); 
+                p.open(StdRandom.uniform(n)+1, StdRandom.uniform(n)+1); 
             }
             thresholds[i] = (double) p.numberOfOpenSites()/(n*n);
         }
@@ -35,11 +37,11 @@ public class PercolationStats {
     }
     public double confidenceLo() {
         // low  endpoint of 95% confidence interval
-        return mean() - 1.96*stddev()/Math.sqrt(trials);
+        return mean() - CONFIDENCE_95*stddev()/Math.sqrt(trials);
     }
     public double confidenceHi() {
         // high endpoint of 95% confidence interval
-        return mean() + 1.96*stddev()/Math.sqrt(trials);
+        return mean() + CONFIDENCE_95*stddev()/Math.sqrt(trials);
         
     }
     
@@ -53,17 +55,5 @@ public class PercolationStats {
         System.out.printf("stddev = %f\n", stats.stddev());
         System.out.printf("95%% confidence interval = [%f, %f]\n", stats.confidenceLo(), stats.confidenceHi());
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+   
 }

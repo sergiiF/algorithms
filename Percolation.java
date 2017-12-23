@@ -2,7 +2,7 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private WeightedQuickUnionUF union;
+    private final WeightedQuickUnionUF union;
     private final int gridSize;
     private boolean[] openItems;
     private int openCount;
@@ -11,25 +11,21 @@ public class Percolation {
 
     public Percolation(int n) {
         // create n-by-n grid, with all sites blocked
+        if (n <= 0) throw new java.lang.IllegalArgumentException("N is out of bounds");
         gridSize = n;
         union = new WeightedQuickUnionUF(n * n + 2);
         openItems = new boolean[n * n];
         openCount = 0;
         firstRowItemIndex = n * n;
         lastRowItemIndex = n * n + 1;
-        for (int i = 0; i <n; i++) {
-            union.union(i, firstRowItemIndex);
-            union.union(i + (n - 1) * n, lastRowItemIndex);
-        }
     }
 
     public void open(int row, int col) {
         // open site (row, col) if it is not open already
         if (!isOpen(row, col)) {
             int index = pos2index(row, col);
-            int[][] link_to = new int[][] { { row - 1, col }, { row, col + 1 }, { row + 1, col + 1 },
-                    { row, col - 1 } };
-            for (int[] item : link_to) {
+            int[][] linkTo = new int[][] { { row - 1, col }, { row, col + 1 }, { row + 1, col }, { row, col - 1 } };
+            for (int[] item : linkTo) {
                 try {
                     if (isOpen(item[0], item[1])) {
                         union.union(index, pos2index(item[0], item[1]));
@@ -37,10 +33,17 @@ public class Percolation {
                 } catch (IllegalArgumentException e) {
                     continue;
                 }
-                ;
             }
             openCount += 1;
             openItems[index] = true;
+            // Add to input or output if either first or last line 
+            if (row == 1) {
+                union.union(index, firstRowItemIndex);
+            } else {
+                if (row == gridSize){
+                    union.union(index, lastRowItemIndex);
+                }
+            }
         }
     }
 
@@ -50,7 +53,7 @@ public class Percolation {
 
     public boolean isFull(int row, int col) {
         // is site (row, col) full?
-        return union.connected(firstRowItemIndex, pos2index(row, col));
+        return isOpen(row, col) && union.connected(firstRowItemIndex, pos2index(row, col));
     }
 
     public int numberOfOpenSites() {
@@ -65,10 +68,10 @@ public class Percolation {
 
     private int pos2index(int row, int col) {
         // System.out.printf("%d, %d\n", row, col);
-        if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) {
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize) {
             throw new IllegalArgumentException();
         }
-        return row * gridSize + col;
+        return (row-1) * gridSize + (col-1);
     }
 
 }
