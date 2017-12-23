@@ -39,10 +39,9 @@ public class Percolation {
             // Add to input or output if either first or last line 
             if (row == 1) {
                 union.union(index, firstRowItemIndex);
-            } else {
-                if (row == gridSize){
-                    union.union(index, lastRowItemIndex);
-                }
+            }
+            if (row == gridSize){
+                union.union(index, lastRowItemIndex);
             }
         }
     }
