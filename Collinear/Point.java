@@ -10,16 +10,16 @@
 
 import java.util.Comparator;
 import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
     
+    private static final  int LESS = -1;
+    private static final  int EQUAL = 0;
+    private static final  int GREATER = 1;
+
     private final int x;     // x-coordinate of this point
     private final int y;     // y-coordinate of this point
     
-    private final static int LESS = -1;
-    private final static int EQUAL = 0;
-    private final static int GREATER = 1;
     
     
     /**
@@ -70,7 +70,7 @@ public class Point implements Comparable<Point> {
             throw new java.lang.IllegalArgumentException("");
         }
         
-        if (this.x == that.x){
+        if (this.x == that.x) {
             if (this.y == that.y) 
                 return Double.NEGATIVE_INFINITY;
             return Double.POSITIVE_INFINITY;
@@ -119,11 +119,11 @@ public class Point implements Comparable<Point> {
             public int compare(Point point1, Point point2) {
                 double slopeDiff = slopeTo(point1) - slopeTo(point2);
                 if (slopeDiff > 0) {
-                    return 1;
+                    return GREATER;
                 } else if (slopeDiff < 0) {
-                    return -1;
+                    return LESS;
                 } else {
-                    return 0;
+                    return EQUAL;
                 }
             }
         };
