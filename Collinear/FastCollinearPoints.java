@@ -1,49 +1,50 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdDraw;
 
-public class BruteCollinearPoints {
+
+
+public class FastCollinearPoints {
     private final Point[] points;
     private final ArrayList<LineSegment> segments = new ArrayList<>();
     
-    public BruteCollinearPoints(Point[] points)    // finds all line segments containing 4 points
-    {
+    public FastCollinearPoints(Point[] points) {    // finds all line segments containing 4 or more points
         if (points == null)
             throw new NullPointerException();
         
         this.points = points = points.clone();
         
         Arrays.sort(this.points);
-        // for (Point p :this.points) StdOut.println(p);
-            
         if (hasDuplicates())
             throw new IllegalArgumentException("Cannot have duplicate points.");
         
-        // check 4 points in a row. If a->b->c->d, add a->d to segments
-        int N = points.length;
-        for (int a = 0; a < N-3; a++) {
-            for (int b = a+1; b < N-2; b++) {
-                double slopeB = points[a].slopeTo(points[b]);
-                for (int c = b+1; c < N-1; c++) {
-                    double slopeC = points[a].slopeTo(points[c]);
-                    if (Double.compare(slopeB, slopeC) == 0) {
-                        for (int d = c+1; d < N; d++) {
-                            if (Double.compare(slopeB, points[a].slopeTo(points[d])) == 0) {
-                                segments.add(new LineSegment(points[a], points[d])); // points are sorted, so a is min and d is max
-                                // StdOut.println("---------------------");
-                                // StdOut.println(points[a]);
-                                // StdOut.println(points[d]);
-                                    
-                            }
-                        }
+        // for each point calculate slopes with all other points.
+        // sort slopes
+        // if >3 equal slopes -> add to segments[]
+        for (int j = 0; j < points.length; j++) {
+            Point p = points[j];
+            Point[] pointsCopy = Arrays.copyOfRange(points, j, points.length);
+            Arrays.sort(pointsCopy, p.slopeOrder());
+
+            double lastSlope = Double.NEGATIVE_INFINITY;
+            int lastIndex = 0;            
+            for (int i = 1; i < pointsCopy.length; i++) {
+                if (Double.compare(p.slopeTo(pointsCopy[i]), lastSlope) != 0) {
+                    if (i-lastIndex >= 3) {
+                        segments.add(new LineSegment(p, pointsCopy[i-1]));
                     }
+                    lastIndex = i;
+                    lastSlope = p.slopeTo(pointsCopy[i]);
                 }
+            } // for
+            if (pointsCopy.length-lastIndex >= 3) {
+                segments.add(new LineSegment(p, pointsCopy[pointsCopy.length-1]));
             }
         }
+        
     }
     
     private boolean hasDuplicates() {
@@ -54,14 +55,15 @@ public class BruteCollinearPoints {
         return false;
     }
     
-    public int numberOfSegments()        // the number of line segments
-    {
-        return segments.size();
-    }
-    public LineSegment[] segments()                // the line segments
-    {
+    
+    public LineSegment[] segments() {               // the line segments
         return segments.toArray(new LineSegment[segments.size()]);
     }
+    
+    public int numberOfSegments() {       // the number of line segments
+        return segments.size();
+    }
+    
     
     public static void main(String[] args) {
         
@@ -87,11 +89,12 @@ public class BruteCollinearPoints {
         
         // print and draw the line segments
         // FastCollinearPoints collinear = new FastCollinearPoints(points);
-        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        FastCollinearPoints collinear = new FastCollinearPoints(points);
         for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
         }
         StdDraw.show();
-    }    
+    }
+    
 }
