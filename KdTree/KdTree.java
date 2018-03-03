@@ -54,9 +54,6 @@ public class KdTree {
         if (p == null) throw new java.lang.IllegalArgumentException();
         
         root = insert(root, p, VERTICAL);
-        if (null == root.rect) {
-            root.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
-        }
     }
     
     private Node insert(Node x,
@@ -66,28 +63,24 @@ public class KdTree {
             size++;
             return new Node(p, null);
         }
-        Node new_node = null.
-        //equal points
+        
         if (x.p.equals(p)) return x;
         
         if (orientation == VERTICAL) {
             // check x-coord
-            if (p.x() < x.p.x()) 
+            if (p.x() < x.p.x()) {
                 x.lb = insert(x.lb, p, !orientation);
-            else { 
+            } else {
                 x.rt = insert(x.rt, p, !orientation);
             }
         }
         else {
             // check y-coord
-            if (p.y() < x.p.y()) 
-                x.lb = insert(x.lb, p, !orientation);
-            else { 
-                x.rt = insert(x.rt, p, !orientation);
+            if (p.y() < x.p.y()) {
+                x.lb = new_node = insert(x.lb, p, !orientation);
+             } else { 
+                x.rt = new_node = insert(x.rt, p, !orientation);
             }
-        }
-        if (null == root.rect) {
-            root.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
         }
         return x;
     }
