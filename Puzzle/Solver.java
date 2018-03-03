@@ -22,7 +22,11 @@ public class Solver {
         }
         
         public int compareTo(pqElement that) {
-            return this.b.manhattan() + this.moves - that.b.manhattan() - that.moves;   
+            int res = this.b.manhattan() + this.moves - that.b.manhattan() - that.moves;   
+            if (res == 0) { // get the smallest manhattan
+                res = this.b.manhattan() - that.b.manhattan();
+            }
+            return res;
         }
         
         public pqElement getParent() {
@@ -61,6 +65,7 @@ public class Solver {
                     pq.insert(new pqElement(child, item));
                 }
             }
+
             if (!pqTwin.isEmpty()) {
                 pqElement itemTwin = pqTwin.delMin();
                 if (itemTwin.getBoard().isGoal()) {
@@ -73,7 +78,7 @@ public class Solver {
                         pqTwin.insert(new pqElement(child, itemTwin));
                     }
                 }
-            }          
+            }         
         }
     }
     
