@@ -55,16 +55,15 @@ public class PointSET {
         if (p == null) throw new java.lang.IllegalArgumentException();
         if (pointsSet.isEmpty()) return null;
         Point2D closest = null;
-        double minDist = 0;
+        double minDist = Double.MAX_VALUE;
         for (Point2D x : pointsSet) {
-            double curDist  = p.distanceTo(x);
-            if ((minDist == 0) || (minDist > curDist)) {
+            double curDist  = p.distanceSquaredTo(x);
+            if (minDist > curDist) {
                 minDist = curDist;
                 closest = x;
             }
         }
         return closest;
-        
     }
     
     public static void main(String[] args) {                  // unit testing of the methods (optional) 

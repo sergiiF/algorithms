@@ -11,9 +11,12 @@ public class KdTree {
     private static final boolean HORIZONTAL = true;
     private static final boolean VERTICAL = false;
     
+    private Node root;
+    private int size = 0;
+
     private static class Node {
-        private Point2D p;      // the point
-        private RectHV rect;    // the axis-aligned rectangle corresponding to this node
+        private final Point2D p;      // the point
+        private final RectHV rect;    // the axis-aligned rectangle corresponding to this node
         private Node lb;        // the left/bottom subtree
         private Node rt;        // the right/top subtree
         
@@ -35,8 +38,6 @@ public class KdTree {
     } 
     
     
-    private Node root;
-    private int size = 0;
     
     public KdTree() {                              // construct an empty set of points 
         root = null;
@@ -82,7 +83,7 @@ public class KdTree {
             if (p.y() < x.p.y()) {
                 RectHV newRect = new RectHV(x.rect.xmin(), x.rect.ymin(), x.rect.xmax(), x.p.y());
                 x.lb = insert(x.lb, p, !orientation, newRect);
-             } else { 
+            } else { 
                 RectHV newRect = new RectHV(x.rect.xmin(), x.p.y(), x.rect.xmax(), x.rect.ymax());
                 x.rt = insert(x.rt, p, !orientation, newRect);
             }
@@ -106,15 +107,15 @@ public class KdTree {
             } else { 
                 tmp = tmp.rt;
             }
-            orientation = ! orientation;
+            orientation = !orientation;
         }
         return false;
     }
     
     private static class NodeExt {
-        private Node n;
+        private final Node n;
         boolean orient;
-         
+        
         public NodeExt(Node n, boolean orient) {
             this.n = n;
             this.orient = orient;
@@ -143,10 +144,10 @@ public class KdTree {
     public void draw() {                         // draw all points to standard draw 
         LinkedList<NodeExt> q = new LinkedList<>();
         q.add(new NodeExt(root, VERTICAL));
-        while (q.size() != 0){
+        while (! q.isEmpty()){
             NodeExt node = q.remove();
             if (node.n == null) {
-                 continue;
+                continue;
             } else {
                 node.draw();
             }
@@ -154,8 +155,8 @@ public class KdTree {
             q.add(new NodeExt(node.n.rt, !node.orient));
         }
     }
-
-
+    
+    
     
     public Iterable<Point2D> range(RectHV rect) {             // all points that are inside the rectangle (or on the boundary)
         ArrayList<Point2D> arr = new ArrayList<>();
@@ -183,27 +184,76 @@ public class KdTree {
     
     public Point2D nearest(Point2D p) {            // a nearest neighbor in the set to point p; null if the set is empty 
         if (p == null) throw new java.lang.IllegalArgumentException();
+        if (root == null) return null;
         
-        return p;
+        Point2D closest = nearest(root, p, root.p);
+        
+        return closest;
     }
     
-    public void printIt(){
+    private Point2D nearest (Node node, Point2D query, Point2D closest) {
+        if (node == null) return closest;
+        
+        double distance = closest.distanceSquaredTo(query);
+        
+        double tmpDist = node.p.distanceSquaredTo(query);
+        if (tmpDist < distance) {
+            closest = node.p;
+            distance = tmpDist;
+        }
+        
+        // find which rect we query belongs to. Store it as primary, other as secondary
+        Node primary, secondary;
+        double primaryDist, secondaryDist;
+        
+        double distLB = (node.lb == null) ? Double.MAX_VALUE : node.lb.rect.distanceSquaredTo(query);
+        double distRT = (node.rt == null) ? Double.MAX_VALUE : node.rt.rect.distanceSquaredTo(query);
+        
+        if (distLB < distRT) {
+            primary = node.lb;
+            primaryDist = distLB;
+            secondary = node.rt;
+            secondaryDist = distRT;
+        } else {
+            primary = node.rt;
+            primaryDist = distRT;
+            secondary = node.lb;
+            secondaryDist = distLB;
+        }
+        
+        // Find if node.point is closest now, if yes, update closest and distance
+        
+        // Recurse primary, getting nearest point.
+        if (primaryDist < distance) {
+            closest = nearest(primary, query, closest);
+            distance = closest.distanceSquaredTo(query);
+        }
+        // Update distance
+        // If it is more than distance to secondary rect, recurse again to secondary 
+        if (secondaryDist < distance) {
+            closest = nearest(secondary, query, closest);
+        }
+
+        return closest;
+    }
+    
+    private void printIt() {
         LinkedList<Node> q = new LinkedList<>();
         q.add(root);
-        while (q.size() != 0){
+        while (!q.isEmpty()) {
             Node node = q.remove();
             if (node == null) {
-                 StdOut.print(" (null)");
-                 continue;
+                StdOut.print(" (null)");
+                continue;
             } else {
-                 StdOut.printf("\n (%f, %f), rect (%f, %f, %f, %f)", node.p.x(), node.p.y(), node.rect.xmin(), node.rect.ymin(), node.rect.xmax(), node.rect.ymax());
+                StdOut.printf("\n (%f, %f), rect (%f, %f, %f, %f)", node.p.x(), node.p.y(), node.rect.xmin(), node.rect.ymin(), node.rect.xmax(), node.rect.ymax());
             }
             q.add(node.lb);
             q.add(node.rt);
         }
-
+        
     }
-   
+    
     public static void main(String[] args) {                  // unit testing of the methods (optional) 
         // initialize the data structures from file
         String filename = args[0];
@@ -223,16 +273,16 @@ public class KdTree {
             Point2D p = new Point2D(x, y);
             StdOut.println("contain: " + kd.contains(p));
         }
-            Point2D p = new Point2D(0, 0.1);
-            StdOut.println("should not contain: " + kd.contains(p));
-            
-            
+        Point2D p = new Point2D(0, 0.1);
+        StdOut.println("should not contain: " + kd.contains(p));
+        
+        
         // draw the points
         StdDraw.clear();
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.01);
         kd.draw();
         StdDraw.show();
-
+        
     }
 }
